@@ -1,0 +1,62 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "9bcaeba738d724272527e355f390865f",
+    "packages": [
+        {
+            "name": "mohamedsaleh077/lno",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mohamedsaleh077/lno.git",
+                "reference": "2a360530785db3e419646bb0af9235a1da108587"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mohamedsaleh077/lno/zipball/2a360530785db3e419646bb0af9235a1da108587",
+                "reference": "2a360530785db3e419646bb0af9235a1da108587",
+                "shasum": ""
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Mohamedsaleh077\\Lno\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-3.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Mohammed Saleh",
+                    "email": "mohammed.saleh@tuta.io"
+                }
+            ],
+            "description": "Lightweight Advanced and Smart QueryBuilder",
+            "support": {
+                "issues": "https://github.com/mohamedsaleh077/lno/issues",
+                "source": "https://github.com/mohamedsaleh077/lno/tree/main"
+            },
+            "time": "2026-03-10T20:43:44+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {
+        "mohamedsaleh077/lno": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {},
+    "platform-dev": {},
+    "platform-overrides": {
+        "php": "8.3.0"
+    },
+    "plugin-api-version": "2.9.0"
+}
