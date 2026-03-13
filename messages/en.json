@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "Hello!",
+    "description": "This is a authentication project built as a demo ",
+    "footer": "This is the footer.",
+    "signIn": "Sign In",
+    "log-in": "Log In"
+  }
+}

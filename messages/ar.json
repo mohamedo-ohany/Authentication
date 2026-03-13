@@ -1,0 +1,9 @@
+{
+  "HomePage": {
+    "title": "مرحبا!",
+    "description": "This is a authentication project built as a demo ",
+    "footer": "هذا هو الفوتر.",
+    "signIn": "انشاء حساب جديد",
+    "log-in": "تسجيل الدخول"
+  }
+}
