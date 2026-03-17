@@ -2,21 +2,27 @@ import { NextResponse } from "next/server";
 
 import { SignupFormSchema, type FormData } from "@/app/lib/definitions";
 
+// Base URL for the external auth backend service.
 const API_BASE_URL = process.env.API_BASE_URL;
 
+// Maps form fields to a single user-facing error message.
 type FieldErrors = Partial<Record<keyof FormData, string>>;
 
+// Backend can return errors as an array, a keyed object, or nothing.
 type BackendErrors = string[] | Record<string, string[] | string> | undefined;
 
+// Minimal backend response shape used in this route.
 type BackendJson = {
   ok: number;
   errors?: BackendErrors;
   message?: string;
 };
 
+// Normalizes backend error formats into predictable field-level errors.
 function toFieldErrors(errors: BackendErrors): FieldErrors {
   const fieldErrors: FieldErrors = {};
 
+  // Fallback mapper when backend returns generic text messages.
   const setByMessage = (message: string) => {
     const m = message.toLowerCase();
 
@@ -34,6 +40,7 @@ function toFieldErrors(errors: BackendErrors): FieldErrors {
     return fieldErrors;
   }
 
+  // Handles structured errors like { email: ["..."] }.
   if (errors && typeof errors === "object") {
     for (const [key, value] of Object.entries(errors)) {
       const first =
@@ -60,6 +67,7 @@ function toFieldErrors(errors: BackendErrors): FieldErrors {
   return fieldErrors;
 }
 
+// Proxies backend Set-Cookie header so auth/session cookies reach the browser.
 function applyBackendCookies(
   response: NextResponse,
   backendResponse: Response,
@@ -72,6 +80,7 @@ function applyBackendCookies(
 }
 
 export async function POST(request: Request) {
+  // Fail fast if backend URL is missing from environment.
   if (!API_BASE_URL) {
     return NextResponse.json(
       { success: false, error: "API is not configured" },
@@ -81,6 +90,7 @@ export async function POST(request: Request) {
 
   let body: unknown;
 
+  // Guard against malformed JSON payloads.
   try {
     body = await request.json();
   } catch {
@@ -90,11 +100,13 @@ export async function POST(request: Request) {
     );
   }
 
+  // Validate request body with Zod schema before forwarding to backend.
   const parsed = SignupFormSchema.safeParse(body);
 
   if (!parsed.success) {
     const fieldErrors: FieldErrors = {};
 
+    // Keep only the first error per field to avoid noisy UI state.
     for (const issue of parsed.error.issues) {
       const field = issue.path[0] as keyof FormData;
       if (!fieldErrors[field]) fieldErrors[field] = issue.message;
@@ -107,6 +119,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Forward sanitized signup payload to backend service.
     const backendResponse = await fetch(`${API_BASE_URL}/user/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -118,8 +131,10 @@ export async function POST(request: Request) {
       cache: "no-store",
     });
 
+    // Parse backend response into the local typed shape.
     const result: BackendJson = await backendResponse.json();
 
+    // Convert backend failure shape to a consistent frontend contract.
     if (result.ok !== 1) {
       return NextResponse.json(
         {
@@ -133,11 +148,13 @@ export async function POST(request: Request) {
       );
     }
 
+    // On success, return OK and forward backend cookies if present.
     const response = NextResponse.json({ success: true }, { status: 200 });
     applyBackendCookies(response, backendResponse);
 
     return response;
   } catch (error) {
+    // Network/runtime fallback when backend is unreachable or invalid.
     console.error("Error during sign-up:", error);
     return NextResponse.json(
       { success: false, error: "Network error, please try again" },

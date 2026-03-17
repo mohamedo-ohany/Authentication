@@ -4,6 +4,7 @@ export const SignupFormSchema = z
   .object({
     username: z
       .string()
+      .regex(/^\S+$/, "Username must not contain spaces")
       .min(2, "Username must be at least 2 characters")
       .regex(
         /^[a-zA-Z0-9._-]+$/,
@@ -12,6 +13,7 @@ export const SignupFormSchema = z
       .max(20, "Username must be at most 20 characters"),
     email: z
       .string()
+      .regex(/^\S+$/, "Email must not contain spaces")
       .email("Invalid email address")
       .max(50, "Email must be at most 50 characters"),
     password: z
@@ -30,6 +32,7 @@ export type FormData = z.infer<typeof SignupFormSchema>;
 export const LoginFormSchema = z.object({
   email: z
     .string()
+    .regex(/^\S+$/, "Email must not contain spaces")
     .email("Invalid email address")
     .max(50, "Email must be at most 50 characters"),
   password: z
