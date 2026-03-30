@@ -1,6 +1,7 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { NextIntlClientProvider } from "next-intl";
+import { Suspense } from "react";
 
 export default function RootLayout({
   children,
@@ -8,20 +9,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Suspense fallback={null}>
             <NextIntlClientProvider>{children}</NextIntlClientProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </>
+          </Suspense>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

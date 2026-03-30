@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import { SignupFormSchema, SignupFormData } from "../lib/definitions";
+import { LoginFormData, LoginFormSchema } from "../lib/definitions";
 import { useAuthFormSubmit } from "../lib/useAuthFormSubmit";
 import { createZodFormResolver } from "../lib/zodFormResolver";
 
@@ -22,27 +22,25 @@ import { PasswordVisibilityToggle } from "@/components/ui/password-visibility-to
 const INPUT_CLASS = "bg-(--input-bg) border-(--input-border)";
 const PASSWORD_INPUT_CLASS = `${INPUT_CLASS} pr-10`;
 
-export default function SignUpPage() {
-  // Local UI state keeps visibility toggles independent between both inputs.
+export default function LogInPage() {
+  // Keep password visibility state local to this form only.
   const [showPassword, setShowPassword] = useState(false);
-  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting, submitCount },
-  } = useForm<SignupFormData>({
-    resolver: createZodFormResolver<SignupFormData>(SignupFormSchema),
+  } = useForm<LoginFormData>({
+    resolver: createZodFormResolver<LoginFormData>(LoginFormSchema),
   });
 
-  const formAction = useAuthFormSubmit<SignupFormData>({
-    endpoint: "/api/auth/signup",
+  const formAction = useAuthFormSubmit<LoginFormData>({
+    endpoint: "/api/auth/login",
     setError,
     buildBody: (data) => ({
       email: data.email,
       password: data.password,
-      username: data.username,
     }),
   });
 
@@ -53,34 +51,7 @@ export default function SignUpPage() {
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="input-field-username">Username</FieldLabel>
-          <AnimatedFieldWrapper
-            fieldKey="username"
-            hasError={Boolean(errors.username)}
-            submitCount={submitCount}
-          >
-            <Input
-              {...register("username")}
-              id="input-field-username"
-              type="text"
-              placeholder="Enter your username"
-              className={INPUT_CLASS}
-            />
-          </AnimatedFieldWrapper>
-
-          {errors.username ? (
-            <FieldDescription className="text-red-400">
-              {errors.username.message}
-            </FieldDescription>
-          ) : (
-            <FieldDescription className="text-muted-foreground">
-              Your unique username to login.
-            </FieldDescription>
-          )}
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="form-email">Email</FieldLabel>
+          <FieldLabel htmlFor="form-email">Email or Username</FieldLabel>
           <AnimatedFieldWrapper
             fieldKey="email"
             hasError={Boolean(errors.email)}
@@ -89,8 +60,9 @@ export default function SignUpPage() {
             <Input
               {...register("email")}
               id="form-email"
-              type="email"
-              placeholder="john@example.com"
+              type="text"
+              autoComplete="username"
+              placeholder="Email or username"
               className={INPUT_CLASS}
             />
           </AnimatedFieldWrapper>
@@ -101,7 +73,7 @@ export default function SignUpPage() {
             </FieldDescription>
           ) : (
             <FieldDescription className="text-muted-foreground">
-              Enter a valid email.
+              Enter your email address or username.
             </FieldDescription>
           )}
         </Field>
@@ -131,36 +103,6 @@ export default function SignUpPage() {
         {errors.password ? (
           <FieldDescription className="text-red-400">
             {errors.password.message}
-          </FieldDescription>
-        ) : null}
-
-        <Field>
-          <FieldLabel htmlFor="form-password-confirm">Confirm Password</FieldLabel>
-          <AnimatedFieldWrapper
-            fieldKey="password-confirm"
-            hasError={Boolean(errors.passwordConfirm)}
-            submitCount={submitCount}
-            className="relative"
-          >
-            <Input
-              {...register("passwordConfirm")}
-              id="form-password-confirm"
-              type={showPasswordConfirm ? "text" : "password"}
-              placeholder="Confirm your password"
-              className={PASSWORD_INPUT_CLASS}
-            />
-            <PasswordVisibilityToggle
-              visible={showPasswordConfirm}
-              onToggle={() => setShowPasswordConfirm((current) => !current)}
-              showLabel="Show confirmation password"
-              hideLabel="Hide confirmation password"
-            />
-          </AnimatedFieldWrapper>
-        </Field>
-
-        {errors.passwordConfirm ? (
-          <FieldDescription className="text-red-400">
-            {errors.passwordConfirm.message}
           </FieldDescription>
         ) : null}
 

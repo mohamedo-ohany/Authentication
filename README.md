@@ -1,70 +1,63 @@
-# Auth Project (Next.js + PHP API)
+# Authentication Frontend (Next.js)
 
-Frontend authentication demo built with Next.js (App Router) and TypeScript.
-The app currently implements a sign-up flow that proxies requests to a PHP backend and forwards backend cookies to the browser.
+A Next.js 16 authentication frontend with animated forms, cookie-based session flow, dark/light mode, and bilingual UI (English/Arabic).
 
 ## Tech Stack
 
-- Next.js 16 (App Router)
+- Next.js 16 (App Router + Cache Components)
 - React 19 + TypeScript
 - Tailwind CSS 4
-- react-hook-form + zod validation
-- shadcn/ui components + next-themes
-- next-intl (messages are currently loaded statically from English locale)
+- react-hook-form + zod
+- motion
+- next-intl
+- shadcn/ui + Radix UI + next-themes
 
 ## Current Features
 
-- Home page with links to auth routes and theme toggle
-- Sign-up UI with client-side validation
-- API route proxy for sign-up (`/api/auth/signup`)
-- Backend validation error mapping to field-level form errors
-- Cookie forwarding from PHP backend (`Set-Cookie` is passed through by the Next.js route)
+- Landing page with animated entry, auth navigation, theme toggle, and language toggle.
+- Login page at `/log-in` with validation, animated field states, and password visibility toggle.
+- Sign-up page at `/sign-up` with validation, animated field states, and password confirmation.
+- Profile page at `/profile` with logout action.
+- Unified auth API route at `/api/auth/[operation]` handling `login` and `signup`.
+- Logout API route at `/api/auth/logout` clearing supported auth cookie names.
+- Route protection through `proxy.ts` for `/profile/:path*`.
+- i18n support for exactly two locales: `en` and `ar`.
 
-## Auth Flow (Current)
+## Auth API Flow
 
-1. User submits form at `/sign-up`.
-2. Frontend sends `POST /api/auth/signup` to the Next.js route handler.
-3. Route validates payload with zod.
-4. Route forwards request to `${API_BASE_URL}/user/signup`.
-5. If backend returns errors, route maps and returns structured `fieldErrors`.
-6. If backend succeeds, route forwards `Set-Cookie` from backend response.
-7. Frontend redirects to `/profile` on success.
+1. Client form submits to `/api/auth/login` or `/api/auth/signup`.
+2. Route validates input with zod.
+3. Route forwards sanitized payload to `${API_BASE_URL}/user/{operation}`.
+4. On failure, route returns normalized `fieldErrors` and fallback `error` message.
+5. On success, route forwards `Set-Cookie` headers and returns `{ success: true }`.
 
-## API Contract Expected From PHP
+Expected success signal from auth API response is `ok === 1`.
 
-The sign-up route currently expects JSON similar to:
+## Internationalization
 
-```json
-{
-	"ok": 1,
-	"message": "optional",
-	"errors": {
-		"email": ["Email already exists"]
-	}
-}
-```
-
-Notes:
-
-- Success is detected via `ok === 1`.
-- Validation/business errors can be either:
-	- array of strings
-	- object keyed by field (`email`, `username`, `password`, etc.)
-- Backend should return `Set-Cookie` when auth/session cookie is needed.
+- Messages are loaded from:
+	- `messages/en.json`
+	- `messages/ar.json`
+- Locale resolution priority:
+	1. `locale` cookie
+	2. `requestLocale`
+	3. default `en`
+- The language dropdown updates locale in client state, persists it to cookie, then refreshes the app.
 
 ## Environment Variables
 
-Create/update `.env` in project root:
+Create a `.env` file in project root:
 
 ```env
 API_BASE_URL=http://localhost:8000/api
 AUTH_SECRET=replace_with_strong_random_value
+# Optional, defaults to Token when missing
+AUTH_COOKIE_NAME=Token
 ```
 
 Notes:
 
-- `API_BASE_URL` is required for the API proxy route.
-- `AUTH_SECRET` exists in current env file but is not actively used by the current route handlers.
+- `API_BASE_URL` is required for auth route forwarding and proxy checks.
 - Do not commit real secrets.
 
 ## Local Development
@@ -75,15 +68,13 @@ Install dependencies:
 pnpm install
 ```
 
-Run dev server:
+Start dev server:
 
 ```bash
 pnpm dev
 ```
 
-Open:
-
-- `http://localhost:3000`
+Open http://localhost:3000
 
 ## Scripts
 
@@ -96,49 +87,46 @@ Open:
 
 ```text
 app/
-	api/auth/signup/route.ts    # Next.js API route proxy for sign-up
-	lib/definitions.ts          # zod schemas and form types
-	sign-up/page.tsx            # sign-up page and form logic
-	layout.tsx                  # root layout, theme and intl providers
+	api/auth/
+		[operation]/route.ts      # login/signup proxy route
+		logout/route.ts           # logout + cookie cleanup
+	lib/
+		definitions.ts            # zod schemas + form types
+		useAuthFormSubmit.ts      # shared auth submit hook
+		zodFormResolver.ts        # resolver adapter for zod v4
+	log-in/page.tsx             # login form
+	sign-up/page.tsx            # signup form
+	profile/page.tsx            # authenticated profile page
 	page.tsx                    # landing page
+	layout.tsx                  # providers and app shell
 
 components/
-	ui/*                        # shadcn/ui components
-	ModeToggle.tsx              # light/dark/system theme switch
-	theme-provider.tsx          # next-themes wrapper
+	auth/
+		AuthFormLayout.tsx        # shared auth form shell
+		AnimatedFieldWrapper.tsx  # animated field wrapper
+		AuthFormActions.tsx       # shared cancel/submit actions
+	LocaleToggle.tsx            # locale switcher (en/ar)
+	ModeToggle.tsx              # theme switcher
+	ui/                         # reusable UI primitives
 
 messages/
 	en.json
 	ar.json
 
-src/i18n/
-	request.ts                  # next-intl request config
+src/
+	i18n/request.ts             # locale + messages loader
+	types/animation.types.ts    # motion presets
+
+proxy.ts                      # route protection middleware
 ```
 
-## i18n Status
+## Validation And Error Handling
 
-- `next-intl` is configured.
-- Locale is currently hardcoded to `en` in `src/i18n/request.ts`.
-- Arabic messages file exists but is not selected dynamically yet.
+- Field validation is defined in zod schemas.
+- Server-side validation errors are mapped to field-level UI errors.
+- Network failures return safe fallback messages.
 
-## Known Gaps
+## Build Status
 
-- Home page links to `/log-in`, but this route/page is currently missing.
-- Redirect target `/profile` is referenced after successful sign-up, but profile route is not present in current tree.
-- `proxy.ts` exists but is empty.
-
-## Recommended Next Steps
-
-1. Add `/log-in` page and `/api/auth/login` route.
-2. Add protected `/profile` page and server-side auth check.
-3. Move locale from static to dynamic selection (cookie/header/path).
-4. Add integration tests for auth flow and backend error mapping.
-
-## Troubleshooting
-
-- `API is not configured`:
-	- Ensure `.env` contains `API_BASE_URL`.
-	- Restart dev server after changing env vars.
-- `Network error, please try again`:
-	- Verify PHP backend is running and reachable.
-	- Confirm backend URL path includes `/user/signup` under `API_BASE_URL`.
+- `pnpm lint` passes.
+- `pnpm build` passes.
