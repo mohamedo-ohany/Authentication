@@ -1,9 +1,60 @@
 {
   "HomePage": {
+    "badge": "دخول آمن",
     "title": "مرحبا!",
-    "description": "هذا مشروع تجريبي للمصادقة.",
-    "footer": "هذا هو الفوتر.",
-    "sign-up": "إنشاء حساب جديد",
-    "log-in": "تسجيل الدخول"
+    "description": "تجربة مصادقة خفيفة بجلسات تعتمد على الكوكيز.",
+    "ctaHint": "أنشئ حسابا جديدا أو سجل الدخول للمتابعة.",
+    "signUp": "إنشاء حساب",
+    "logIn": "تسجيل الدخول"
+  },
+  "Locale": {
+    "toggleLabel": "تبديل اللغة",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "Auth": {
+    "Common": {
+      "cancel": "إلغاء",
+      "loading": "يرجى الانتظار...",
+      "networkError": "خطأ في الشبكة، حاول مرة أخرى",
+      "unknownError": "حدث خطأ غير متوقع، حاول مرة أخرى"
+    },
+    "Login": {
+      "title": "أهلا بعودتك",
+      "subtitle": "سجل الدخول للمتابعة إلى ملفك الشخصي.",
+      "emailLabel": "البريد الإلكتروني أو اسم المستخدم",
+      "emailPlaceholder": "البريد أو اسم المستخدم",
+      "emailHint": "استخدم نفس البريد أو اسم المستخدم الذي سجلت به.",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "submit": "تسجيل الدخول"
+    },
+    "Signup": {
+      "title": "أنشئ حسابك",
+      "subtitle": "ابدأ جلستك الآمنة خلال ثوان قليلة.",
+      "usernameLabel": "اسم المستخدم",
+      "usernamePlaceholder": "أدخل اسم المستخدم",
+      "usernameHint": "استخدم من 3 إلى 50 حرفا: حروف، أرقام، نقطة، شرطة سفلية أو شرطة.",
+      "emailLabel": "البريد الإلكتروني",
+      "emailPlaceholder": "john@example.com",
+      "emailHint": "أدخل بريدا إلكترونيا فعالا.",
+      "passwordLabel": "كلمة المرور",
+      "passwordPlaceholder": "أنشئ كلمة مرور",
+      "passwordConfirmLabel": "تأكيد كلمة المرور",
+      "passwordConfirmPlaceholder": "أعد إدخال كلمة المرور",
+      "showPassword": "إظهار كلمة المرور",
+      "hidePassword": "إخفاء كلمة المرور",
+      "showPasswordConfirm": "إظهار تأكيد كلمة المرور",
+      "hidePasswordConfirm": "إخفاء تأكيد كلمة المرور",
+      "submit": "إنشاء حساب"
+    },
+    "Profile": {
+      "title": "مرحبا، تم تسجيل دخولك بنجاح!",
+      "subtitle": "جلستك نشطة ومحمية عبر رمز HttpOnly.",
+      "logoutButton": "تسجيل الخروج",
+      "logoutLoading": "جار تسجيل الخروج..."
+    }
   }
 }

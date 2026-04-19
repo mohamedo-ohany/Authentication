@@ -22,11 +22,13 @@ type OperationConfig = {
   buildPayload: (data: unknown) => Record<string, string>;
 };
 
+type FormFieldKey = keyof SignupFormData | keyof LoginFormData;
+
 const operationConfigs: Record<AuthOperation, OperationConfig> = {
   login: {
     schema: LoginFormSchema,
     buildPayload: (data) => ({
-      email: (data as LoginFormData).email,
+      username_email: (data as LoginFormData).email,
       password: (data as LoginFormData).password,
     }),
   },
@@ -44,11 +46,55 @@ function isAuthOperation(value: string): value is AuthOperation {
   return value === "login" || value === "signup";
 }
 
+function firstErrorMessage(value: string[] | string): string {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
+  const first = value[0];
+  return typeof first === "string" ? first.trim() : "";
+}
+
+function normalizeFieldKey(
+  key: string,
+  operation: AuthOperation,
+): FormFieldKey | undefined {
+  if (operation === "login") {
+    if (key === "username" || key === "username_email" || key === "email") {
+      return "email";
+    }
+
+    if (key === "password") {
+      return "password";
+    }
+
+    return undefined;
+  }
+
+  if (key === "username") {
+    return "username";
+  }
+
+  if (key === "email") {
+    return "email";
+  }
+
+  if (key === "password") {
+    return "password";
+  }
+
+  if (key === "passwordConfirm" || key === "password_confirm") {
+    return "passwordConfirm";
+  }
+
+  return undefined;
+}
+
 // Maps form fields to a single user-facing error message.
-type FieldErrors = Partial<Record<keyof SignupFormData, string>>;
+type FieldErrors = Partial<Record<FormFieldKey, string>>;
 
 // Backend can send errors as a list or a field-keyed object.
-type BackendErrors = string[] | Record<string, string[]>;
+type BackendErrors = string[] | Record<string, string[] | string>;
 
 // Minimal backend response shape used in this route.
 type BackendJson = {
@@ -59,7 +105,10 @@ type BackendJson = {
 };
 
 // Converts backend field errors to first-message-per-field shape for the form.
-function toFieldErrors(errors?: BackendErrors): FieldErrors {
+function toFieldErrors(
+  errors: BackendErrors | undefined,
+  operation: AuthOperation,
+): FieldErrors {
   const fieldErrors: FieldErrors = {};
 
   if (!errors || Array.isArray(errors)) {
@@ -67,12 +116,16 @@ function toFieldErrors(errors?: BackendErrors): FieldErrors {
   }
 
   for (const [key, messages] of Object.entries(errors)) {
-    const first =
-      Array.isArray(messages) && messages.length > 0 ? String(messages[0]) : "";
+    const first = firstErrorMessage(messages);
 
     if (!first) continue;
 
-    const field = key as keyof SignupFormData;
+    const field = normalizeFieldKey(key, operation);
+
+    if (!field) {
+      continue;
+    }
+
     if (!fieldErrors[field]) {
       fieldErrors[field] = first;
     }
@@ -92,8 +145,7 @@ function getFallbackErrorMessage(errors?: BackendErrors): string | undefined {
   }
 
   for (const messages of Object.values(errors)) {
-    const first =
-      Array.isArray(messages) && messages.length > 0 ? String(messages[0]) : "";
+    const first = firstErrorMessage(messages);
 
     if (first) {
       return first;
@@ -172,11 +224,15 @@ export async function POST(
     // Keep only the first error per field to avoid noisy UI state.
     for (const issue of parsed.error.issues) {
       const field = issue.path[0];
-      if (
-        typeof field === "string" &&
-        !fieldErrors[field as keyof SignupFormData]
-      ) {
-        fieldErrors[field as keyof SignupFormData] = issue.message;
+
+      if (typeof field !== "string") {
+        continue;
+      }
+
+      const normalizedField = normalizeFieldKey(field, operation);
+
+      if (normalizedField && !fieldErrors[normalizedField]) {
+        fieldErrors[normalizedField] = issue.message;
       }
     }
 
@@ -196,7 +252,21 @@ export async function POST(
     });
 
     // Parse backend response into the local typed shape.
-    const result: BackendJson = await backendResponse.json();
+    let result: BackendJson;
+
+    try {
+      result = (await backendResponse.json()) as BackendJson;
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid response from authentication service",
+        },
+        {
+          status: 502,
+        },
+      );
+    }
 
     // Convert backend failure shape to a consistent frontend contract.
     if (result.ok !== 1) {
@@ -207,7 +277,7 @@ export async function POST(
             result.message ||
             getFallbackErrorMessage(result.errors) ||
             "Request failed",
-          fieldErrors: toFieldErrors(result.errors),
+          fieldErrors: toFieldErrors(result.errors, operation),
         },
         {
           status: backendResponse.status >= 400 ? backendResponse.status : 422,

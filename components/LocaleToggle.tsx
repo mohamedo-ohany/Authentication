@@ -1,7 +1,7 @@
 "use client";
 
 import { Languages } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -23,6 +23,7 @@ function toSupportedLocale(locale: string): AppLocale {
 export function LocaleToggle() {
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("Locale");
   const [isPending, startTransition] = useTransition();
   const [activeLocale, setActiveLocale] = useState<AppLocale>(
     toSupportedLocale(locale),
@@ -51,7 +52,7 @@ export function LocaleToggle() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="icon" disabled={isPending}>
           <Languages className="h-[1.2rem] w-[1.2rem]" />
-          <span className="sr-only">Toggle language</span>
+          <span className="sr-only">{t("toggleLabel")}</span>
         </Button>
       </DropdownMenuTrigger>
 
@@ -60,13 +61,13 @@ export function LocaleToggle() {
           onClick={() => handleLocaleChange("en")}
           disabled={activeLocale === "en"}
         >
-          English
+          {t("english")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => handleLocaleChange("ar")}
           disabled={activeLocale === "ar"}
         >
-          العربية
+          {t("arabic")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

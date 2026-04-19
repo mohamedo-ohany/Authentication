@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLocale, useTranslations } from "next-intl";
 
 import { SignupFormSchema, SignupFormData } from "../lib/definitions";
 import { useAuthFormSubmit } from "../lib/useAuthFormSubmit";
@@ -26,6 +27,10 @@ export default function SignUpPage() {
   // Local UI state keeps visibility toggles independent between both inputs.
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const t = useTranslations("Auth.Signup");
+  const commonT = useTranslations("Auth.Common");
+  const locale = useLocale();
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   const {
     register,
@@ -44,16 +49,25 @@ export default function SignUpPage() {
       password: data.password,
       username: data.username,
     }),
+    messages: {
+      networkError: commonT("networkError"),
+      unknownError: commonT("unknownError"),
+    },
   });
 
   return (
     <AuthFormLayout
       onSubmit={handleSubmit(formAction)}
       rootError={errors.root?.message}
+      title={t("title")}
+      subtitle={t("subtitle")}
+      dir={dir}
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="input-field-username">Username</FieldLabel>
+          <FieldLabel htmlFor="input-field-username">
+            {t("usernameLabel")}
+          </FieldLabel>
           <AnimatedFieldWrapper
             fieldKey="username"
             hasError={Boolean(errors.username)}
@@ -63,7 +77,7 @@ export default function SignUpPage() {
               {...register("username")}
               id="input-field-username"
               type="text"
-              placeholder="Enter your username"
+              placeholder={t("usernamePlaceholder")}
               className={INPUT_CLASS}
             />
           </AnimatedFieldWrapper>
@@ -74,13 +88,13 @@ export default function SignUpPage() {
             </FieldDescription>
           ) : (
             <FieldDescription className="text-muted-foreground">
-              Your unique username to login.
+              {t("usernameHint")}
             </FieldDescription>
           )}
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="form-email">Email</FieldLabel>
+          <FieldLabel htmlFor="form-email">{t("emailLabel")}</FieldLabel>
           <AnimatedFieldWrapper
             fieldKey="email"
             hasError={Boolean(errors.email)}
@@ -90,7 +104,7 @@ export default function SignUpPage() {
               {...register("email")}
               id="form-email"
               type="email"
-              placeholder="john@example.com"
+              placeholder={t("emailPlaceholder")}
               className={INPUT_CLASS}
             />
           </AnimatedFieldWrapper>
@@ -101,13 +115,13 @@ export default function SignUpPage() {
             </FieldDescription>
           ) : (
             <FieldDescription className="text-muted-foreground">
-              Enter a valid email.
+              {t("emailHint")}
             </FieldDescription>
           )}
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="form-password">Password</FieldLabel>
+          <FieldLabel htmlFor="form-password">{t("passwordLabel")}</FieldLabel>
           <AnimatedFieldWrapper
             fieldKey="password"
             hasError={Boolean(errors.password)}
@@ -118,12 +132,14 @@ export default function SignUpPage() {
               {...register("password")}
               id="form-password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder={t("passwordPlaceholder")}
               className={PASSWORD_INPUT_CLASS}
             />
             <PasswordVisibilityToggle
               visible={showPassword}
               onToggle={() => setShowPassword((current) => !current)}
+              showLabel={t("showPassword")}
+              hideLabel={t("hidePassword")}
             />
           </AnimatedFieldWrapper>
         </Field>
@@ -135,9 +151,11 @@ export default function SignUpPage() {
         ) : null}
 
         <Field>
-          <FieldLabel htmlFor="form-password-confirm">Confirm Password</FieldLabel>
+          <FieldLabel htmlFor="form-password-confirm">
+            {t("passwordConfirmLabel")}
+          </FieldLabel>
           <AnimatedFieldWrapper
-            fieldKey="password-confirm"
+            fieldKey="passwordConfirm"
             hasError={Boolean(errors.passwordConfirm)}
             submitCount={submitCount}
             className="relative"
@@ -146,14 +164,14 @@ export default function SignUpPage() {
               {...register("passwordConfirm")}
               id="form-password-confirm"
               type={showPasswordConfirm ? "text" : "password"}
-              placeholder="Confirm your password"
+              placeholder={t("passwordConfirmPlaceholder")}
               className={PASSWORD_INPUT_CLASS}
             />
             <PasswordVisibilityToggle
               visible={showPasswordConfirm}
               onToggle={() => setShowPasswordConfirm((current) => !current)}
-              showLabel="Show confirmation password"
-              hideLabel="Hide confirmation password"
+              showLabel={t("showPasswordConfirm")}
+              hideLabel={t("hidePasswordConfirm")}
             />
           </AnimatedFieldWrapper>
         </Field>
@@ -164,7 +182,12 @@ export default function SignUpPage() {
           </FieldDescription>
         ) : null}
 
-        <AuthFormActions isSubmitting={isSubmitting} />
+        <AuthFormActions
+          isSubmitting={isSubmitting}
+          cancelLabel={commonT("cancel")}
+          submitLabel={t("submit")}
+          submittingLabel={commonT("loading")}
+        />
       </FieldGroup>
     </AuthFormLayout>
   );

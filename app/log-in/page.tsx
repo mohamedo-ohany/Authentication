@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLocale, useTranslations } from "next-intl";
 
 import { LoginFormData, LoginFormSchema } from "../lib/definitions";
 import { useAuthFormSubmit } from "../lib/useAuthFormSubmit";
@@ -25,6 +26,10 @@ const PASSWORD_INPUT_CLASS = `${INPUT_CLASS} pr-10`;
 export default function LogInPage() {
   // Keep password visibility state local to this form only.
   const [showPassword, setShowPassword] = useState(false);
+  const t = useTranslations("Auth.Login");
+  const commonT = useTranslations("Auth.Common");
+  const locale = useLocale();
+  const dir = locale === "ar" ? "rtl" : "ltr";
 
   const {
     register,
@@ -42,16 +47,23 @@ export default function LogInPage() {
       email: data.email,
       password: data.password,
     }),
+    messages: {
+      networkError: commonT("networkError"),
+      unknownError: commonT("unknownError"),
+    },
   });
 
   return (
     <AuthFormLayout
       onSubmit={handleSubmit(formAction)}
       rootError={errors.root?.message}
+      title={t("title")}
+      subtitle={t("subtitle")}
+      dir={dir}
     >
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="form-email">Email or Username</FieldLabel>
+          <FieldLabel htmlFor="form-email">{t("emailLabel")}</FieldLabel>
           <AnimatedFieldWrapper
             fieldKey="email"
             hasError={Boolean(errors.email)}
@@ -62,7 +74,7 @@ export default function LogInPage() {
               id="form-email"
               type="text"
               autoComplete="username"
-              placeholder="Email or username"
+              placeholder={t("emailPlaceholder")}
               className={INPUT_CLASS}
             />
           </AnimatedFieldWrapper>
@@ -73,13 +85,13 @@ export default function LogInPage() {
             </FieldDescription>
           ) : (
             <FieldDescription className="text-muted-foreground">
-              Enter your email address or username.
+              {t("emailHint")}
             </FieldDescription>
           )}
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="form-password">Password</FieldLabel>
+          <FieldLabel htmlFor="form-password">{t("passwordLabel")}</FieldLabel>
           <AnimatedFieldWrapper
             fieldKey="password"
             hasError={Boolean(errors.password)}
@@ -90,12 +102,14 @@ export default function LogInPage() {
               {...register("password")}
               id="form-password"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder={t("passwordPlaceholder")}
               className={PASSWORD_INPUT_CLASS}
             />
             <PasswordVisibilityToggle
               visible={showPassword}
               onToggle={() => setShowPassword((current) => !current)}
+              showLabel={t("showPassword")}
+              hideLabel={t("hidePassword")}
             />
           </AnimatedFieldWrapper>
         </Field>
@@ -106,7 +120,12 @@ export default function LogInPage() {
           </FieldDescription>
         ) : null}
 
-        <AuthFormActions isSubmitting={isSubmitting} />
+        <AuthFormActions
+          isSubmitting={isSubmitting}
+          cancelLabel={commonT("cancel")}
+          submitLabel={t("submit")}
+          submittingLabel={commonT("loading")}
+        />
       </FieldGroup>
     </AuthFormLayout>
   );

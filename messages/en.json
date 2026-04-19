@@ -1,9 +1,60 @@
 {
   "HomePage": {
+    "badge": "Secure Access",
     "title": "Hello!",
-    "description": "This is an authentication demo project.",
-    "footer": "This is the footer.",
-    "sign-up": "Sign Up",
-    "log-in": "Log In"
+    "description": "A lightweight authentication demo with cookie-based sessions.",
+    "ctaHint": "Create an account or log in to continue.",
+    "signUp": "Sign Up",
+    "logIn": "Log In"
+  },
+  "Locale": {
+    "toggleLabel": "Toggle language",
+    "english": "English",
+    "arabic": "العربية"
+  },
+  "Auth": {
+    "Common": {
+      "cancel": "Cancel",
+      "loading": "Please wait...",
+      "networkError": "Network error, please try again",
+      "unknownError": "Something went wrong, please try again"
+    },
+    "Login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to continue to your profile.",
+      "emailLabel": "Email or Username",
+      "emailPlaceholder": "Email or username",
+      "emailHint": "Use the same email or username you registered with.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "submit": "Log In"
+    },
+    "Signup": {
+      "title": "Create your account",
+      "subtitle": "Start your secure session in a few seconds.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "usernameHint": "Use 3-50 characters: letters, numbers, dot, underscore or dash.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "john@example.com",
+      "emailHint": "Enter an active email address.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "passwordConfirmLabel": "Confirm Password",
+      "passwordConfirmPlaceholder": "Repeat your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "showPasswordConfirm": "Show confirmation password",
+      "hidePasswordConfirm": "Hide confirmation password",
+      "submit": "Sign Up"
+    },
+    "Profile": {
+      "title": "Welcome, you are logged in!",
+      "subtitle": "Your session is active and protected by an HttpOnly token.",
+      "logoutButton": "Log Out",
+      "logoutLoading": "Logging out..."
+    }
   }
 }

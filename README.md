@@ -49,15 +49,16 @@ Expected success signal from auth API response is `ok === 1`.
 Create a `.env` file in project root:
 
 ```env
-API_BASE_URL=http://localhost:8000/api
-AUTH_SECRET=replace_with_strong_random_value
+API_BASE_URL=http://localhost
 # Optional, defaults to Token when missing
 AUTH_COOKIE_NAME=Token
+# Optional (backend), set 1 in local dev only
+APP_DEBUG=0
 ```
 
 Notes:
 
-- `API_BASE_URL` is required for auth route forwarding and proxy checks.
+- `API_BASE_URL` is required for auth route forwarding and proxy checks. It should point to the backend root where `/user/*` routes are available.
 - Do not commit real secrets.
 
 ## Local Development

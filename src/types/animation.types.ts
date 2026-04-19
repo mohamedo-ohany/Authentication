@@ -1,7 +1,8 @@
 export type FormContainerType = {
-  hidden: { opacity: number };
+  hidden: { opacity: number; y: number };
   show: {
     opacity: number;
+    y: number;
     transition: { staggerChildren: number };
   };
 };
@@ -28,15 +29,16 @@ export type ShakeErrorType = {
 };
 
 export type TextMotionType = {
-  initial: { opacity: number; x: number };
-  animate: { opacity: number; x: number };
-  transition: { delay: number };
+  initial: { opacity: number; y: number };
+  animate: { opacity: number; y: number };
+  transition: { delay: number; duration: number };
 };
 
 export const formContainer: FormContainerType = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 0, y: 12 },
   show: {
     opacity: 1,
+    y: 0,
     transition: {
       staggerChildren: 0.08,
     },
@@ -44,11 +46,11 @@ export const formContainer: FormContainerType = {
 };
 
 export const inputItem: InputItemType = {
-  hidden: { opacity: 0, y: 10 },
+  hidden: { opacity: 0, y: 12 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring", stiffness: 260, damping: 20 },
+    transition: { type: "spring", stiffness: 180, damping: 20 },
   },
 };
 
@@ -57,22 +59,22 @@ export const shakeError = {
     x: 0,
   },
   shake: {
-    x: [-2, 2, -2, 2, 0],
-    transition: { duration: 0.4 },
+    x: [-3, 3, -3, 2, 0],
+    transition: { duration: 0.36 },
   },
 };
 
 export const textmotion: TextMotionType = {
-  initial: { opacity: 0, x: 20 },
-  animate: { opacity: 1, x: 0 },
-  transition: { delay: 0.3 },
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  transition: { delay: 0.2, duration: 0.45 },
 };
 
 export const buttonVariants = {
   whileTap: {
-    scale: 0.95,
+    scale: 0.97,
   },
   whileHover: {
-    scale: 1.05,
+    scale: 1.02,
   },
 };

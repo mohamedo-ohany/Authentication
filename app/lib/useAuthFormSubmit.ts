@@ -19,6 +19,10 @@ type UseAuthFormSubmitParams<T extends FieldValues> = {
   setError: UseFormSetError<T>;
   buildBody: (data: T) => unknown;
   successPath?: string;
+  messages?: {
+    networkError?: string;
+    unknownError?: string;
+  };
 };
 
 export function useAuthFormSubmit<T extends FieldValues>({
@@ -26,8 +30,13 @@ export function useAuthFormSubmit<T extends FieldValues>({
   setError,
   buildBody,
   successPath = "/profile",
+  messages,
 }: UseAuthFormSubmitParams<T>): SubmitHandler<T> {
   const router = useRouter();
+  const networkErrorMessage =
+    messages?.networkError ?? "Network error, please try again";
+  const unknownErrorMessage =
+    messages?.unknownError ?? "Something went wrong, please try again";
 
   return async (data) => {
     let response: Response;
@@ -42,7 +51,7 @@ export function useAuthFormSubmit<T extends FieldValues>({
       });
     } catch {
       setError("root" as Path<T>, {
-        message: "Network error, please try again",
+        message: networkErrorMessage,
       });
       return;
     }
@@ -75,7 +84,7 @@ export function useAuthFormSubmit<T extends FieldValues>({
     }
 
     setError("root" as Path<T>, {
-      message: "Something went wrong, please try again",
+      message: unknownErrorMessage,
     });
   };
 }
