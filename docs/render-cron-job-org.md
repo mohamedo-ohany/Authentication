@@ -7,7 +7,7 @@ Follow these steps to host the backend on Render and keep it awake.
 1. Push the repository to GitHub.
 2. In Render, create a new Blueprint service.
 3. Select this repository.
-4. Render detects `render.yaml` and provisions service `auth-backend-render`.
+4. Render detects `render.yaml` and provisions service `authentication-waad`.
 5. Wait for deploy to finish and copy the service URL.
 
 Health URL:
@@ -27,9 +27,16 @@ Expected sample response:
 
 ## 2) Update Frontend Environment (Vercel)
 
-Set this env var in Vercel and redeploy:
+Set these env vars in Vercel and redeploy:
 
-- `API_BASE_URL=https://<your-render-service>.onrender.com`
+- `RENDER_API_BASE_URL=https://<your-render-service>.onrender.com`
+- `INTERNAL_API_KEY=<same-strong-secret-used-on-render>`
+
+Set these env vars in Render service too:
+
+- `INTERNAL_API_KEY=<same-strong-secret-used-on-vercel>`
+- `JWT_SECRET=<strong-random-secret>`
+- `JWT_TTL_SECONDS=3600`
 
 ## 3) Create cron-job.org Keepalive Job
 

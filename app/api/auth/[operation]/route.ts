@@ -8,10 +8,15 @@ import {
   type LoginFormData,
 } from "@/app/lib/definitions";
 
-// Base URL for the external auth backend service.
-// Falls back to the Render backend URL when env var is missing.
+// Base URL for backend auth service.
+// In production, default to the Render backend service.
 const API_BASE_URL =
-  process.env.API_BASE_URL?.trim() || "https://authentication-waad.onrender.com";
+  process.env.NODE_ENV === "production"
+    ? process.env.RENDER_API_BASE_URL?.trim() ||
+      "https://authentication-waad.onrender.com"
+    : process.env.API_BASE_URL?.trim() || "http://localhost:8000";
+
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY?.trim();
 
 type AuthOperation = "login" | "signup";
 
@@ -238,9 +243,17 @@ export async function POST(
 
   try {
     // Forward sanitized payload to backend service for the selected operation.
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    if (INTERNAL_API_KEY) {
+      headers["X-Internal-Api-Key"] = INTERNAL_API_KEY;
+    }
+
     const backendResponse = await fetch(`${API_BASE_URL}/user/${operation}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(operationConfig.buildPayload(parsed.data)),
       cache: "no-store",
     });

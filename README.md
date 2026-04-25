@@ -49,19 +49,31 @@ Expected success signal from auth API response is `ok === 1`.
 Create a `.env` file in project root:
 
 ```env
-API_BASE_URL=http://localhost
-# Optional, defaults to Token when missing
+# Local dev backend (optional in development)
+API_BASE_URL=http://localhost:8000
+
+# Production backend base URL used by /api/auth and proxy
+RENDER_API_BASE_URL=https://authentication-waad.onrender.com
+
+# Optional shared secret between Vercel and Render backend
+# When set, backend accepts requests only with this header key.
+INTERNAL_API_KEY=replace-with-strong-secret
+
+# Optional, defaults to Token
 AUTH_COOKIE_NAME=Token
-# Optional (backend), set 1 in local dev only
-APP_DEBUG=0
+
+# Optional token TTL
+JWT_TTL_SECONDS=3600
+
+# Optional JWT secret for backend token signing
+JWT_SECRET=replace-with-strong-secret
 ```
 
 Notes:
 
-- `API_BASE_URL` is required for auth route forwarding and proxy checks. It should point to the backend root where `/user/*` routes are available.
-- Do not commit real secrets.
-
-## Local Development
+- In production, backend requests default to `RENDER_API_BASE_URL`.
+- In local development, backend requests default to `API_BASE_URL`.
+- Keep `INTERNAL_API_KEY` the same in both Vercel and Render to prevent direct abuse of backend routes.
 
 Install dependencies:
 
@@ -88,11 +100,14 @@ Open http://localhost:3000
 
 ```text
 app/
+	health/route.ts               # backend health endpoint for Render + cron
+	user/[operation]/route.ts     # backend login/signup/isloggedin endpoints
 	api/auth/
 		[operation]/route.ts      # login/signup proxy route
 		logout/route.ts           # logout + cookie cleanup
 	lib/
 		definitions.ts            # zod schemas + form types
+		renderAuthBackend.ts      # backend helpers (tokens, storage, validation)
 		useAuthFormSubmit.ts      # shared auth submit hook
 		zodFormResolver.ts        # resolver adapter for zod v4
 	log-in/page.tsx             # login form
