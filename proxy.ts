@@ -1,13 +1,19 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-// Backend base URL used for authentication checks.
+// Primary backend URL used for authentication checks.
 // In production, default to the Render backend service.
-const API_BASE_URL =
+const PRIMARY_API_BASE_URL =
   process.env.NODE_ENV === "production"
     ? process.env.RENDER_API_BASE_URL?.trim() ||
       "https://authentication-waad.onrender.com"
     : process.env.API_BASE_URL?.trim() || "http://localhost:8000";
+
+// Optional fallback backend (for migration period), e.g. existing Railway URL.
+const FALLBACK_API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.API_BASE_URL?.trim() || ""
+    : "";
 
 // Canonical auth cookie name used across the app.
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME?.trim() || "Token";
@@ -38,22 +44,35 @@ export default async function proxy(request: NextRequest) {
       headers["X-Internal-Api-Key"] = INTERNAL_API_KEY;
     }
 
-    const response = await fetch(`${API_BASE_URL}/user/isloggedin`, {
-      method: "POST",
-      headers,
-      cache: "no-store",
-    });
+    const candidates = [
+      PRIMARY_API_BASE_URL,
+      ...(FALLBACK_API_BASE_URL && FALLBACK_API_BASE_URL !== PRIMARY_API_BASE_URL
+        ? [FALLBACK_API_BASE_URL]
+        : []),
+    ];
 
-    if (!response.ok) {
-      return redirectToHome(request);
-    }
+    for (const baseUrl of candidates) {
+      try {
+        const response = await fetch(`${baseUrl}/user/isloggedin`, {
+          method: "POST",
+          headers,
+          cache: "no-store",
+        });
 
-    const result = await response.json();
-    const isAuthenticated = result?.ok === 1 || result?.login?.ok === 1;
+        if (!response.ok) {
+          continue;
+        }
 
-    // Allow request only when backend explicitly confirms session validity.
-    if (isAuthenticated) {
-      return NextResponse.next();
+        const result = await response.json();
+        const isAuthenticated = result?.ok === 1 || result?.login?.ok === 1;
+
+        // Allow request only when backend explicitly confirms session validity.
+        if (isAuthenticated) {
+          return NextResponse.next();
+        }
+      } catch {
+        // Try next backend candidate on errors.
+      }
     }
 
     return redirectToHome(request);

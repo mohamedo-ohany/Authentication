@@ -8,13 +8,19 @@ import {
   type LoginFormData,
 } from "@/app/lib/definitions";
 
-// Base URL for backend auth service.
+// Primary backend URL for auth service.
 // In production, default to the Render backend service.
-const API_BASE_URL =
+const PRIMARY_API_BASE_URL =
   process.env.NODE_ENV === "production"
     ? process.env.RENDER_API_BASE_URL?.trim() ||
       "https://authentication-waad.onrender.com"
     : process.env.API_BASE_URL?.trim() || "http://localhost:8000";
+
+// Optional fallback backend (for migration period), e.g. existing Railway URL.
+const FALLBACK_API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.API_BASE_URL?.trim() || ""
+    : "";
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY?.trim();
 
@@ -162,6 +168,48 @@ function getFallbackErrorMessage(errors?: BackendErrors): string | undefined {
   return undefined;
 }
 
+async function callBackend(
+  operation: AuthOperation,
+  payload: Record<string, string>,
+): Promise<{ response: Response; json: BackendJson } | undefined> {
+  const candidates = [
+    PRIMARY_API_BASE_URL,
+    ...(FALLBACK_API_BASE_URL && FALLBACK_API_BASE_URL !== PRIMARY_API_BASE_URL
+      ? [FALLBACK_API_BASE_URL]
+      : []),
+  ];
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (INTERNAL_API_KEY) {
+    headers["X-Internal-Api-Key"] = INTERNAL_API_KEY;
+  }
+
+  for (const baseUrl of candidates) {
+    try {
+      const response = await fetch(`${baseUrl}/user/${operation}`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+
+      try {
+        const json = (await response.json()) as BackendJson;
+        return { response, json };
+      } catch {
+        // Try next backend candidate when response is not valid JSON.
+      }
+    } catch {
+      // Try next backend candidate on network/runtime failure.
+    }
+  }
+
+  return undefined;
+}
+
 // Proxies backend Set-Cookie header so auth/session cookies reach the browser.
 function applyBackendCookies(
   response: NextResponse,
@@ -242,28 +290,12 @@ export async function POST(
   }
 
   try {
-    // Forward sanitized payload to backend service for the selected operation.
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
+    const backendResult = await callBackend(
+      operation,
+      operationConfig.buildPayload(parsed.data),
+    );
 
-    if (INTERNAL_API_KEY) {
-      headers["X-Internal-Api-Key"] = INTERNAL_API_KEY;
-    }
-
-    const backendResponse = await fetch(`${API_BASE_URL}/user/${operation}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(operationConfig.buildPayload(parsed.data)),
-      cache: "no-store",
-    });
-
-    // Parse backend response into the local typed shape.
-    let result: BackendJson;
-
-    try {
-      result = (await backendResponse.json()) as BackendJson;
-    } catch {
+    if (!backendResult) {
       return NextResponse.json(
         {
           success: false,
@@ -274,6 +306,8 @@ export async function POST(
         },
       );
     }
+
+    const { response: backendResponse, json: result } = backendResult;
 
     // Convert backend failure shape to a consistent frontend contract.
     if (result.ok !== 1) {
