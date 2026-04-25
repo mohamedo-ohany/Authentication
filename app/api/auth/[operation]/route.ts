@@ -7,9 +7,7 @@ import {
   type SignupFormData,
   type LoginFormData,
 } from "@/app/lib/definitions";
-
-// Base URL for the external auth backend service.
-const API_BASE_URL = process.env.API_BASE_URL;
+import { API_BASE_URL } from "@/app/lib/apiBaseUrl";
 
 type AuthOperation = "login" | "signup";
 
@@ -194,14 +192,6 @@ export async function POST(
   }
 
   const operationConfig = operationConfigs[operation];
-
-  // Fail fast if backend URL is missing from environment.
-  if (!API_BASE_URL) {
-    return NextResponse.json(
-      { success: false, error: "API is not configured" },
-      { status: 500 },
-    );
-  }
 
   let body: unknown;
 

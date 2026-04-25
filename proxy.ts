@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-// Backend base URL used for authentication checks.
-const API_BASE_URL = process.env.API_BASE_URL;
+import { API_BASE_URL } from "@/app/lib/apiBaseUrl";
 
 // Canonical auth cookie name used across the app.
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME?.trim() || "Token";
@@ -18,12 +16,6 @@ export default async function proxy(request: NextRequest) {
 
   // Missing auth cookie means user is unauthenticated.
   if (!authCookie?.value) {
-    return redirectToHome(request);
-  }
-
-  // If backend URL is not configured, fail closed for protected pages.
-  if (!API_BASE_URL) {
-    console.error("API_BASE_URL is not configured");
     return redirectToHome(request);
   }
 
@@ -43,9 +35,10 @@ export default async function proxy(request: NextRequest) {
     }
 
     const result = await response.json();
+    const isAuthenticated = result?.ok === 1 || result?.login?.ok === 1;
 
     // Allow request only when backend explicitly confirms session validity.
-    if (result?.ok === 1) {
+    if (isAuthenticated) {
       return NextResponse.next();
     }
 
