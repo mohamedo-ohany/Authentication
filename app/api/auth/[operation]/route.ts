@@ -21,6 +21,7 @@ const FALLBACK_API_BASE_URL =
   process.env.NODE_ENV === "production"
     ? process.env.API_BASE_URL?.trim() || ""
     : "";
+const ALLOW_BACKEND_FALLBACK = process.env.ALLOW_BACKEND_FALLBACK !== "0";
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY?.trim();
 
@@ -174,7 +175,9 @@ async function callBackend(
 ): Promise<{ response: Response; json: BackendJson } | undefined> {
   const candidates = [
     PRIMARY_API_BASE_URL,
-    ...(FALLBACK_API_BASE_URL && FALLBACK_API_BASE_URL !== PRIMARY_API_BASE_URL
+    ...(ALLOW_BACKEND_FALLBACK &&
+    FALLBACK_API_BASE_URL &&
+    FALLBACK_API_BASE_URL !== PRIMARY_API_BASE_URL
       ? [FALLBACK_API_BASE_URL]
       : []),
   ];

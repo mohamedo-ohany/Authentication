@@ -55,6 +55,9 @@ API_BASE_URL=http://localhost:8000
 # Production backend base URL used by /api/auth and proxy
 RENDER_API_BASE_URL=https://authentication-waad.onrender.com
 
+# Set to 0 to force Render only (disable fallback to API_BASE_URL)
+ALLOW_BACKEND_FALLBACK=1
+
 # Optional shared secret between Vercel and Render backend
 # When set, backend accepts requests only with this header key.
 INTERNAL_API_KEY=replace-with-strong-secret
@@ -74,6 +77,7 @@ Notes:
 - In production, backend requests default to `RENDER_API_BASE_URL`.
 - In local development, backend requests default to `API_BASE_URL`.
 - Keep `INTERNAL_API_KEY` the same in both Vercel and Render to prevent direct abuse of backend routes.
+- Set `ALLOW_BACKEND_FALLBACK=0` after migration is complete to enforce Render-only backend traffic.
 
 Install dependencies:
 

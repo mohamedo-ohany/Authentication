@@ -31,6 +31,7 @@ Set these env vars in Vercel and redeploy:
 
 - `RENDER_API_BASE_URL=https://<your-render-service>.onrender.com`
 - `INTERNAL_API_KEY=<same-strong-secret-used-on-render>`
+- `ALLOW_BACKEND_FALLBACK=0` (to force Render only after migration)
 
 Set these env vars in Render service too:
 
