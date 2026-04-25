@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: auth-backend-render
+    runtime: docker
+    dockerfilePath: ./backend/website/Dockerfile
+    dockerContext: ./backend/website
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: APP_DEBUG
+        value: "0"
+      - key: JWT_TTL_SECONDS
+        value: "3600"
+      - key: JWT_SECRET
+        generateValue: true
