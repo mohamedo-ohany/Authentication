@@ -39,6 +39,12 @@ export default function SignUpPage() {
     formState: { errors, isSubmitting, submitCount },
   } = useForm<SignupFormData>({
     resolver: createZodFormResolver<SignupFormData>(SignupFormSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      password: "",
+      passwordConfirm: "",
+    },
   });
 
   const formAction = useAuthFormSubmit<SignupFormData>({
@@ -47,6 +53,7 @@ export default function SignUpPage() {
     buildBody: (data) => ({
       email: data.email,
       password: data.password,
+      passwordConfirm: data.passwordConfirm,
       username: data.username,
     }),
     messages: {

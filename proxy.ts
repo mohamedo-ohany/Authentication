@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { API_BASE_URL } from "@/app/lib/apiBaseUrl";
+
+// Backend base URL used for authentication checks.
+// Falls back to the Render backend URL when env var is missing.
+const API_BASE_URL =
+  process.env.API_BASE_URL?.trim() || "https://authentication-waad.onrender.com";
 
 // Canonical auth cookie name used across the app.
 const AUTH_COOKIE_NAME = process.env.AUTH_COOKIE_NAME?.trim() || "Token";

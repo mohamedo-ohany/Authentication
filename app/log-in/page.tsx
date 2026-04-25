@@ -38,6 +38,10 @@ export default function LogInPage() {
     formState: { errors, isSubmitting, submitCount },
   } = useForm<LoginFormData>({
     resolver: createZodFormResolver<LoginFormData>(LoginFormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
   const formAction = useAuthFormSubmit<LoginFormData>({

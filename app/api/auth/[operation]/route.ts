@@ -7,7 +7,11 @@ import {
   type SignupFormData,
   type LoginFormData,
 } from "@/app/lib/definitions";
-import { API_BASE_URL } from "@/app/lib/apiBaseUrl";
+
+// Base URL for the external auth backend service.
+// Falls back to the Render backend URL when env var is missing.
+const API_BASE_URL =
+  process.env.API_BASE_URL?.trim() || "https://authentication-waad.onrender.com";
 
 type AuthOperation = "login" | "signup";
 
