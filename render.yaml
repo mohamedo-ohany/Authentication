@@ -1,16 +1,22 @@
 services:
   - type: web
     name: authentication-waad
-    runtime: docker
-    dockerfilePath: ./backend/website/Dockerfile
-    dockerContext: ./backend/website
+    runtime: node
+    buildCommand: pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm start
     plan: free
     autoDeploy: true
     healthCheckPath: /health
     envVars:
-      - key: APP_DEBUG
-        value: "0"
+      - key: NODE_VERSION
+        value: "20"
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
+      - key: AUTH_COOKIE_NAME
+        value: "Token"
       - key: JWT_TTL_SECONDS
         value: "3600"
+      - key: INTERNAL_API_KEY
+        generateValue: true
       - key: JWT_SECRET
         generateValue: true

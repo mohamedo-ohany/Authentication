@@ -16,13 +16,6 @@ const PRIMARY_API_BASE_URL =
       "https://authentication-waad.onrender.com"
     : process.env.API_BASE_URL?.trim() || "http://localhost:8000";
 
-// Optional fallback backend (for migration period), e.g. existing Railway URL.
-const FALLBACK_API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? process.env.API_BASE_URL?.trim() || ""
-    : "";
-const ALLOW_BACKEND_FALLBACK = process.env.ALLOW_BACKEND_FALLBACK !== "0";
-
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY?.trim();
 
 type AuthOperation = "login" | "signup";
@@ -173,15 +166,6 @@ async function callBackend(
   operation: AuthOperation,
   payload: Record<string, string>,
 ): Promise<{ response: Response; json: BackendJson } | undefined> {
-  const candidates = [
-    PRIMARY_API_BASE_URL,
-    ...(ALLOW_BACKEND_FALLBACK &&
-    FALLBACK_API_BASE_URL &&
-    FALLBACK_API_BASE_URL !== PRIMARY_API_BASE_URL
-      ? [FALLBACK_API_BASE_URL]
-      : []),
-  ];
-
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -190,27 +174,23 @@ async function callBackend(
     headers["X-Internal-Api-Key"] = INTERNAL_API_KEY;
   }
 
-  for (const baseUrl of candidates) {
+  try {
+    const response = await fetch(`${PRIMARY_API_BASE_URL}/user/${operation}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+
     try {
-      const response = await fetch(`${baseUrl}/user/${operation}`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-        cache: "no-store",
-      });
-
-      try {
-        const json = (await response.json()) as BackendJson;
-        return { response, json };
-      } catch {
-        // Try next backend candidate when response is not valid JSON.
-      }
+      const json = (await response.json()) as BackendJson;
+      return { response, json };
     } catch {
-      // Try next backend candidate on network/runtime failure.
+      return undefined;
     }
+  } catch {
+    return undefined;
   }
-
-  return undefined;
 }
 
 // Proxies backend Set-Cookie header so auth/session cookies reach the browser.
