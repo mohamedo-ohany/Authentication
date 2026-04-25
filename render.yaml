@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: auth-backend-render
+    name: authentication-waad
     runtime: docker
     dockerfilePath: ./backend/website/Dockerfile
     dockerContext: ./backend/website
