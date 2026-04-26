@@ -18,13 +18,29 @@ function redirectToHome(request: NextRequest) {
   return NextResponse.redirect(new URL("/", request.url));
 }
 
+function redirectToProfile(request: NextRequest) {
+  return NextResponse.redirect(new URL("/profile", request.url));
+}
+
+function isAuthEntryPath(pathname: string) {
+  return pathname === "/" || pathname === "/log-in" || pathname === "/sign-up";
+}
+
+function isProtectedProfilePath(pathname: string) {
+  return pathname === "/profile" || pathname.startsWith("/profile/");
+}
+
 export default async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isAuthEntry = isAuthEntryPath(pathname);
+  const isProtectedProfile = isProtectedProfilePath(pathname);
+
   // In proxy, read cookies from the incoming request, not next/headers cookies().
   const authCookie = request.cookies.get(AUTH_COOKIE_NAME);
 
   // Missing auth cookie means user is unauthenticated.
   if (!authCookie?.value) {
-    return redirectToHome(request);
+    return isProtectedProfile ? redirectToHome(request) : NextResponse.next();
   }
 
   try {
@@ -45,7 +61,7 @@ export default async function proxy(request: NextRequest) {
     });
 
     if (!response.ok) {
-      return redirectToHome(request);
+      return isProtectedProfile ? redirectToHome(request) : NextResponse.next();
     }
 
     const result = await response.json();
@@ -53,18 +69,22 @@ export default async function proxy(request: NextRequest) {
 
     // Allow request only when backend explicitly confirms session validity.
     if (isAuthenticated) {
+      if (isAuthEntry) {
+        return redirectToProfile(request);
+      }
+
       return NextResponse.next();
     }
 
-    return redirectToHome(request);
+    return isProtectedProfile ? redirectToHome(request) : NextResponse.next();
   } catch (err) {
     // Network/backend failures should not open protected routes.
     console.error("Error checking login status:", err);
-    return redirectToHome(request);
+    return isProtectedProfile ? redirectToHome(request) : NextResponse.next();
   }
 }
 
 export const config = {
-  // Include nested profile routes too, e.g. /profile/settings.
-  matcher: ["/profile/:path*"],
+  // Redirect authenticated users away from entry pages, and protect profile routes.
+  matcher: ["/", "/log-in", "/sign-up", "/profile/:path*"],
 };
