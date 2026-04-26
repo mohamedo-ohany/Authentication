@@ -85,6 +85,7 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Redirect authenticated users away from entry pages, and protect profile routes.
-  matcher: ["/", "/log-in", "/sign-up", "/profile/:path*"],
+  // Run proxy for all app pages (excluding API/static assets),
+  // then handle route-specific redirect logic in code above.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
